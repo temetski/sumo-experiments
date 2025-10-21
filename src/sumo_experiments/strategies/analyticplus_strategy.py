@@ -450,9 +450,11 @@ class AnalyticPlusAgent():
         lane_data : LaneData
             Data output from SUMO aggregated at the lane level.
         """
+        last_ons = 0
         for movement in self.movements.values():
-            movement.update_last_on(action, phase)
-        phase["last_on_time"] = time
+            movement.update_last_on(action, phase, lane_data)
+            last_ons = max(movement.last_on_time, last_ons)
+        phase["last_on_time"] = last_ons # when movements are in multiple phases, maybe the phase was "served" indirectly
 
     def reset(self, traci):
         """
