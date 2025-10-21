@@ -221,7 +221,6 @@ class AnalyticPlusAgent():
             action = self._sumo2action_phases[sumo_phase_id]
             green_time = self.minimum_green
         else:
-            # self.update_priority_idx()
             phases_priority: dict[actionID, dict[str, float]] = {action_idx: {'priority': 0,
                                                                               'green_time': 0}
                                                                  for action_idx in self.action_phases.keys()}
@@ -409,20 +408,7 @@ class AnalyticPlusAgent():
             phase_idx += 1
             prev_ohe = str(ohe)
 
-        # assert len(self.sumo_phases)%2==0, (self.ID, self.sumo_phases) # relax this phase
-        # add clearing phase # TODO: SUMO can generate an all red phase, currently not handled
-        # self.sumo_phases[-1] = {'sumo_movement_idxs': [],
-        #                         'isYellow': False,
-        #                         'greenPhase': None,
-        #                         'yellowPhase': None,
-        #                         'yellowDuration': None,
-        #                         'id': -1,
-        #                         'movement_ids': set(),
-        #                         'last_on_time': -2
-        #                         }
-        # self.clearing_phase = self.sumo_phases[-1]
-
-    def set_phase(self, sumo_phase_id: int, duration: float = 1e6):
+    def set_phase(self, sumo_phase_id: int, duration: float=1e6):
         """
         Sets the phase of the agent to the indicated phase using the API.
 
@@ -447,27 +433,6 @@ class AnalyticPlusAgent():
         """
         for movement in self.movements.values():
             movement.update_arr_dep_veh_num(lane_data)
-        # for action_id, sumo_phase_id in self.phases.items():
-        #     print(self.phases, self.sumo_phases.keys(), self.env.TLS_DETECTORS[self.ID].keys(), self.ID)
-        #     phase = self.sumo_phases[sumo_phase_id]
-        #     current_vehs = set()
-
-        #     # Collect vehicles detected by numerical detectors for the current phase
-        #     detectors = self.env.TLS_DETECTORS[self.ID][sumo_phase_id]['numerical']
-        #     for det in detectors:
-        #         current_vehs.update(self.traci.lanearea.getLastStepVehicleIDs(det))
-
-        #     # Calculate arrivals and departures
-        #     prev_vehs = phase.get('prev_vehs', set())
-        #     dep_vehs = len(prev_vehs - current_vehs)
-        #     arr_vehs = len(current_vehs - prev_vehs)
-
-        #     # Update phase-level statistics
-        #     phase['arr_vehs_num'] = phase.get('arr_vehs_num', deque([0] * self.interval_length, maxlen=self.interval_length))
-        #     phase['arr_vehs_num'].append(arr_vehs)
-        #     phase['total_dep'] = phase.get('total_dep', 0) + dep_vehs
-        #     phase['total_arr'] = phase.get('total_arr', 0) + arr_vehs
-        #     phase['prev_vehs'] = current_vehs
 
     def update_last_on(self, action: sumoPhase, phase: sumoPhase, time: float):
         """
@@ -558,53 +523,9 @@ class AnalyticPlusAgent():
             stats['arr_rate'] = sum(arr_rates)
             stats['ave_arr_rate'] = sum(ave_arr_rate)
 
-    # def apply_action(self, api, action: tuple[int, Union[float, None]], lane_data: LaneData):
-    #     """Converts the RL action into its implementation in the TRACI api.
-
-    #     Args:
-    #         api (_type_): _description_
-    #         action (tuple[int, Union[float, None]]): _description_
-    #         time (_type_): _description_
-    #         lane_data (LaneData): _description_
-    #     """
-    #     action_idx, green_time = action
-    #     self.chosen_phase = self.sumo_phases[self.action_phases[action_idx]]
-    #     if self.action_type == "act":
-    #         if green_time is None:
-    #             green_time = self.action_interval
-    #         self.green_time = green_time
-    #         assert self.green_time != 0
-
-    #         self.last_act_time = self.env.time
-    #         if self.current_sumo_phase['id'] != self.chosen_phase['id']:
-    #             self.update_last_on(self.chosen_phase, self.current_sumo_phase, lane_data)
-    #             if self.current_sumo_phase['yellowPhase'] is None:
-    #                 raise NotImplementedError
-    #                 self.set_phase(self.clearing_phase['id'])
-    #             else:
-    #                 self.set_phase(self.current_sumo_phase['yellowPhase'])
-    #             self.next_act_time = self.env.time + self.clearing_time + self.green_time
-    #             self.action_type = "update"
-    #         else:
-    #             self.next_act_time = self.env.time + self.green_time
 
     def update(self, lane_data):
-        self.update_arr_dep_veh_num(lane_data)  # lane data not needed for arrival rates
-        # if (self.action_type == 'update' and
-        #         isclose(self.env.time,(self.last_act_time+self.clearing_time))):
-        #     self.set_phase(self.chosen_phase['id'])
-        #     self.action_type = "act"
-        #     assert self.current_sumo_phase['id'] == self.chosen_phase['id']
-
-    # def calculate_reward(self, lanes_count):
-    #     reward = self.get_reward(lanes_count)
-    #     self.total_rewards += [reward]
-    #     # self.reward_count += 1
-    #     return reward
-
-    # @property
-    # def time_to_act(self):
-    #     return isclose(self.env.time, self.next_act_time)
+        self.update_arr_dep_veh_num(lane_data) # lane data not needed for arrival rates
 
 
 class Movement:
@@ -714,10 +635,6 @@ class Movement:
 
         for lane_id in self.in_lanes:
             current_vehs.update(lane_data[lane_id][VEH_LIST])
-
-        # detectors = self._intersection.env.TLS_DETECTORS[self._intersection.ID][self.current_sumo_phase]['numerical']
-        # for det in detectors:
-        #     current_vehs.update(self.traci.lanearea.getLastStepVehicleIDs(det))
 
         dep_vehs = len(self.prev_vehs - current_vehs)
         arr_vehs = len(current_vehs - self.prev_vehs)
