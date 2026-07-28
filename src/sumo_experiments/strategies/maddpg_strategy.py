@@ -233,8 +233,8 @@ class MADDPGStrategy(IntellilightStrategy):
             self.changed_phase = [None for _ in self.intelligent_intersections]
 
             self.time_step = 1
+            self.begin_energy_measurement()
         else:
-            self.zeus_monitor.begin_window("all_agents")
             if self.traci.simulation.getTime() % self.episode_duration == 0:
                 if self._mean_score_i < self.mean_scores.size:
                     self.mean_scores[self._mean_score_i] = np.mean(self.scores)
@@ -273,8 +273,6 @@ class MADDPGStrategy(IntellilightStrategy):
             if (len(self.replay_buffer) >= self.samples_before_update) and (self.time_step % self.steps_per_update == 0):
                 self.train()
             self.time_step += 1
-            results = self.zeus_monitor.end_window("all_agents")
-            self.energy_consumption += self.get_energy_consumption(results)
 
 
     def switch_next_phase(self):

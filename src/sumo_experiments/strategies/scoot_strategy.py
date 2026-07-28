@@ -507,10 +507,10 @@ class ScootScatsStrategy(Strategy):
         if not self.started:
             self.traci = traci
             self._start_agents()
+            self.begin_energy_measurement()
             return True
 
         else:
-            self.zeus_monitor.begin_window('all_agents')
             # Phase occurrence and duration tracking (same as FixedTimeStrategy)
             for tl_id in self.intelligent_intersections:
                 current_phase = self.traci.trafficlight.getPhase(tl_id)
@@ -589,5 +589,3 @@ class ScootScatsStrategy(Strategy):
                         current_time,
                         int(self.measurement_data['cycle_length']),
                     ])
-            results = self.zeus_monitor.end_window('all_agents')
-            self.energy_consumption += self.get_energy_consumption(results)

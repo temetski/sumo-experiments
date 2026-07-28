@@ -82,10 +82,10 @@ class AnalyticPlusStrategy(Strategy):
         if not self.started:
             self.traci = traci
             self._start_agents()
+            self.begin_energy_measurement()
             return True
         else:
             det_data = self.traci.lanearea.getAllSubscriptionResults()
-            self.zeus_monitor.begin_window("all_agents")
             for tls_id in self.intelligent_intersections:
                 agent = self.agents[tls_id]
                 agent.update(det_data)
@@ -117,8 +117,6 @@ class AnalyticPlusStrategy(Strategy):
                         self.analyticplus_logic(tls_id)
                     self.time[tls_id] += 1
                     self.current_phase_duration[tls_id] += 1
-            results = self.zeus_monitor.end_window("all_agents")
-            self.energy_consumption += self.get_energy_consumption(results)
 
     def analyticplus_logic(self, tls_id):
         agent = self.agents[tls_id]

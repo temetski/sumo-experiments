@@ -97,6 +97,7 @@ class Strategy(ABC):
         else:
             self.zeus_monitor = MultiprocessSafeZeusMonitor(raw_monitor, self.zeus_monitor_id)
         self.energy_consumption = 0
+        self._energy_window_open = False
 
     @classmethod
     def _next_zeus_monitor_id(cls):
@@ -143,3 +144,23 @@ class Strategy(ABC):
         dram_energy = sum([measurements.dram_energy[key] for key in measurements.dram_energy]) if measurements.dram_energy is not None else 0
         soc_energy = sum([measurements.soc_energy[key] for key in measurements.soc_energy]) if measurements.soc_energy is not None else 0
         return sum([gpu_energy, cpu_energy, dram_energy, soc_energy])
+
+    def begin_energy_measurement(self):
+        """
+        Open the single energy-measurement window for this strategy's lifetime.
+        Idempotent: only the first call (right after initialization) has effect.
+        """
+        if not self._energy_window_open:
+            self.zeus_monitor.begin_window("all_agents")
+            self._energy_window_open = True
+
+    def finalize_energy_measurement(self):
+        """
+        Close the energy-measurement window opened by begin_energy_measurement and
+        record the total energy consumed over the whole run. Idempotent: calling
+        this more than once, or before the window was ever opened, is a no-op.
+        """
+        if self._energy_window_open:
+            results = self.zeus_monitor.end_window("all_agents")
+            self.energy_consumption = self.get_energy_consumption(results)
+            self._energy_window_open = False

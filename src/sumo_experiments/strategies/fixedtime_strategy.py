@@ -44,8 +44,8 @@ class FixedTimeStrategy(Strategy):
             self.traci = traci
             for tl_id in self.network.TL_IDS:
                 self._start_agents(tl_id)
+            self.begin_energy_measurement()
         else:
-            self.zeus_monitor.begin_window("all_agents")
             for tl_id in self.network.TL_IDS:
                 current_phase = self.traci.trafficlight.getPhase(tl_id)
                 if 'y' in self.traci.trafficlight.getRedYellowGreenState(tl_id):
@@ -67,8 +67,6 @@ class FixedTimeStrategy(Strategy):
                     else:
                         self.time[tl_id] += 1
                     self.current_phase_duration[tl_id] += 1
-            results = self.zeus_monitor.end_window("all_agents")
-            self.energy_consumption += self.get_energy_consumption(results)
 
 
     def _start_agents(self, tl_id):

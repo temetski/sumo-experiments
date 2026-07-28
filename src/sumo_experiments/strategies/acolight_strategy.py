@@ -69,9 +69,9 @@ class AcolightStrategy(Strategy):
         if not self.started:
             self.traci = traci
             self._start_agents()
+            self.begin_energy_measurement()
             return True
         else:
-            self.zeus_monitor.begin_window("all_agents")
             for id_tls in self.intelligent_intersections:
                 current_phase = self.traci.trafficlight.getPhase(id_tls)
                 current_state = self.traci.trafficlight.getRedYellowGreenState(id_tls)
@@ -113,8 +113,6 @@ class AcolightStrategy(Strategy):
                         self.add_prio_phases(id_tls)
                     self.time[id_tls] += 1
                     self.current_phase_duration[id_tls] += 1
-            results = self.zeus_monitor.end_window("all_agents")
-            self.energy_consumption += self.get_energy_consumption(results)
 
     def switch_next_phase(self, id_tls):
         """

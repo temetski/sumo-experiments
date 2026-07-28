@@ -337,7 +337,15 @@ class TraciWrapper:
             tl_nodes[tl] = list(nodes)
         #print(tl_nodes)
 
-
+        # Close out any single-window energy measurements owned by behavioural
+        # functions (e.g. RL/control strategies) now that the simulation loop
+        # has ended, so energy is measured once per run rather than accumulated
+        # across every simulation step.
+        for behavioural_function in self.behavioural_functions:
+            owner = getattr(behavioural_function, '__self__', None)
+            finalize = getattr(owner, 'finalize_energy_measurement', None)
+            if callable(finalize):
+                finalize()
 
         return pd.DataFrame.from_dict(self.data)
         #return flow_values

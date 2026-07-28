@@ -62,9 +62,9 @@ class SotlStrategy(Strategy):
         if not self.started:
             self.traci = traci
             self._start_agents()
+            self.begin_energy_measurement()
             return True
         else:
-            self.zeus_monitor.begin_window("all_agents")
             for id_tls in self.intelligent_intersections:
                 sum_vehicles = self.compute_vehicles_red_lanes(id_tls)
                 current_phase = self.traci.trafficlight.getPhase(id_tls)
@@ -105,8 +105,6 @@ class SotlStrategy(Strategy):
                         self.countdowns[id_tls] += sum_vehicles
                         self.time[id_tls] += 1
                         self.current_phase_duration[id_tls] += 1
-            results = self.zeus_monitor.end_window("all_agents")
-            self.energy_consumption += self.get_energy_consumption(results)
 
     def compute_vehicles_red_lanes(self, id_tls):
         """
